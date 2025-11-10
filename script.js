@@ -10,7 +10,6 @@ const ensNameDisplay = document.getElementById("ensName");
 const gasPriceDisplay = document.getElementById("gasPrice");
 const tokenSearchInput = document.getElementById("tokenSearch");
 
-
 const COVALENT_API_KEY = "cqt_rQWm9fdx3v3DJ6KF3fQ9wtym877K";
 
 let walletAddress = null;
@@ -58,6 +57,7 @@ getEthPriceUSD();
 // 🌐 CHAIN SELECTOR
 // ===============================
 const chainSelector = document.createElement("select");
+chainSelector.id = "chainSelector";
 chainSelector.innerHTML = `
   <option value="eth-mainnet">Ethereum</option>
   <option value="matic-mainnet">Polygon</option>
@@ -66,9 +66,9 @@ chainSelector.innerHTML = `
 chainSelector.style.marginLeft = "10px";
 connectButton.insertAdjacentElement("afterend", chainSelector);
 
-chainSelector.addEventListener("change", (e) => {
+chainSelector.addEventListener("change", async (e) => {
   currentChain = e.target.value;
-  if (walletAddress) loadPortfolio(walletAddress);
+  if (walletAddress) await loadPortfolio(walletAddress);
 });
 
 // ===============================
@@ -93,6 +93,9 @@ connectButton.addEventListener("click", async () => {
   }
 });
 
+// ===============================
+// ⛽ GAS PRICE FETCHER
+// ===============================
 async function getGasPrice() {
   try {
     const res = await fetch("https://api.etherscan.io/api?module=gastracker&action=gasoracle");
@@ -104,10 +107,8 @@ async function getGasPrice() {
   }
 }
 
-// auto update every 15 seconds
 setInterval(getGasPrice, 15000);
 getGasPrice();
-
 
 // ===============================
 // 📊 LOAD PORTFOLIO
@@ -117,8 +118,6 @@ async function loadPortfolio(address) {
     tokenTableBody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
 
     const selectedChain = document.getElementById("chainSelector").value;
-
-    // 👇 Fetch ETH price (only for ETH chain)
     const ethPrice = await getEthPriceUSD();
 
     const response = await fetch(
@@ -133,13 +132,10 @@ async function loadPortfolio(address) {
     tokenTableBody.innerHTML = "";
 
     let totalUsd = 0;
-
     tokens.forEach((token) => {
       const balance = token.balance / Math.pow(10, token.contract_decimals);
       const price =
-        token.contract_ticker_symbol === "ETH"
-          ? ethPrice
-          : token.quote_rate || 0;
+        token.contract_ticker_symbol === "ETH" ? ethPrice : token.quote_rate || 0;
       const value = balance * price;
       totalUsd += value;
 
@@ -154,6 +150,9 @@ async function loadPortfolio(address) {
     });
 
     totalValueDisplay.textContent = `Total Value: $${totalUsd.toFixed(2)}`;
+
+    // Render portfolio chart if canvas exists
+    if (document.getElementById("portfolioChart")) renderPortfolioChart(tokens);
   } catch (err) {
     console.error("Error loading portfolio:", err);
     tokenTableBody.innerHTML =
@@ -161,11 +160,12 @@ async function loadPortfolio(address) {
   }
 }
 
+// ===============================
+// 🎨 PORTFOLIO CHART (OPTIONAL)
+// ===============================
 let portfolioChart = null;
-
 function renderPortfolioChart(tokens) {
   const ctx = document.getElementById("portfolioChart").getContext("2d");
-
   const labels = tokens.map((t) => t.contract_ticker_symbol);
   const values = tokens.map((t) => {
     const balance = t.balance / Math.pow(10, t.contract_decimals);
@@ -173,7 +173,7 @@ function renderPortfolioChart(tokens) {
     return balance * price;
   });
 
-  if (portfolioChart) portfolioChart.destroy(); // reset before re-render
+  if (portfolioChart) portfolioChart.destroy();
 
   portfolioChart = new Chart(ctx, {
     type: "doughnut",
@@ -183,12 +183,12 @@ function renderPortfolioChart(tokens) {
         {
           data: values,
           backgroundColor: [
-            "#00b8b8",
-            "#00e0e0",
-            "#007a7a",
-            "#66ffff",
-            "#99ffcc",
-            "#004d4d",
+            "#FFD700",
+            "#DAA520",
+            "#B8860B",
+            "#8B8000",
+            "#C5A300",
+            "#E6C200",
           ],
           borderWidth: 1,
         },
@@ -196,12 +196,15 @@ function renderPortfolioChart(tokens) {
     },
     options: {
       plugins: {
-        legend: { position: "bottom", labels: { color: "#cfd8dc" } },
+        legend: { position: "bottom", labels: { color: "#d4af37" } },
       },
     },
   });
 }
 
+// ===============================
+// 🔍 TOKEN SEARCH
+// ===============================
 tokenSearchInput.addEventListener("input", () => {
   const searchTerm = tokenSearchInput.value.toLowerCase();
   const rows = tokenTableBody.querySelectorAll("tr");
@@ -209,11 +212,4 @@ tokenSearchInput.addEventListener("input", () => {
     const token = row.querySelector("td:first-child").textContent.toLowerCase();
     row.style.display = token.includes(searchTerm) ? "" : "none";
   });
-});
-
-// 🧭 Reload portfolio when chain is switched
-document.getElementById("chainSelector").addEventListener("change", () => {
-  if (walletAddress) {
-    loadPortfolio(walletAddress);
-  }
 });

@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ChainPort – Token Tracker</title>
     <link rel="stylesheet" href="style.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <header>
@@ -27,9 +30,11 @@
         <p id="ethPriceDisplay">ETH Price: --</p>
       </div>
 
-      <div class="search-bar">
-        <input type="text" id="searchToken" placeholder="Search token..." />
-      </div>
+      <canvas id="portfolioChart"></canvas>
+      <input id="tokenSearch" placeholder="Search token..." />
+      <p id="ethPriceDisplay"></p>
+      <p id="ensName"></p>
+      <p id="gasPrice"></p>
 
       <section id="portfolio">
         <h2>Your Portfolio</h2>
@@ -43,7 +48,9 @@
             </tr>
           </thead>
           <tbody>
-            <tr><td colspan="4" style="text-align:center;">No data yet</td></tr>
+            <tr>
+              <td colspan="4" style="text-align: center">No data yet</td>
+            </tr>
           </tbody>
         </table>
         <p id="totalValue">Total Value: $0.00</p>
