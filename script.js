@@ -8,7 +8,7 @@ const totalValueDisplay = document.getElementById("totalValue");
 const ethPriceDisplay = document.getElementById("ethPriceDisplay");
 const ensNameDisplay = document.getElementById("ensName");
 const gasPriceDisplay = document.getElementById("gasPrice");
-const tokenSearchInput = document.getElementById("tokenSearch");
+const tokenSearchInput = document.getElementById("searchToken");
 
 const COVALENT_API_KEY = "cqt_rQWm9fdx3v3DJ6KF3fQ9wtym877K";
 
@@ -64,23 +64,14 @@ async function getGasPrice() {
 setInterval(getGasPrice, 15000);
 getGasPrice();
 
-// ===============================
 // 🌐 CHAIN SELECTOR
-// ===============================
-const chainSelector = document.createElement("select");
-chainSelector.id = "chainSelector";
-chainSelector.innerHTML = `
-  <option value="eth-mainnet">Ethereum</option>
-  <option value="matic-mainnet">Polygon</option>
-  <option value="arbitrum-mainnet">Arbitrum</option>
-`;
-chainSelector.style.marginLeft = "10px";
-connectButton.insertAdjacentElement("afterend", chainSelector);
+const chainSelector = document.getElementById("chainSelector");
 
 chainSelector.addEventListener("change", async (e) => {
   currentChain = e.target.value;
   if (walletAddress) await loadPortfolio(walletAddress);
 });
+
 
 // ===============================
 // 🦊 CONNECT WALLET
@@ -171,6 +162,7 @@ async function loadPortfolio(address) {
     }
 
     totalValueDisplay.textContent = `Total Value: $${totalUsd.toFixed(2)}`;
+    updatePortfolioHistory(totalUsd);
   } catch (err) {
     console.error("Error loading portfolio:", err);
     tokenTableBody.innerHTML =
@@ -229,4 +221,72 @@ tokenSearchInput.addEventListener("input", () => {
     const token = row.querySelector("td:first-child").textContent.toLowerCase();
     row.style.display = token.includes(searchTerm) ? "" : "none";
   });
+});
+
+// ===============================
+// 📊 PORTFOLIO PERFORMANCE CHART
+// ===============================
+let portfolioHistory = [];
+let performanceChart;
+
+function updatePortfolioHistory(totalValue) {
+  const now = new Date();
+  portfolioHistory.push({ time: now, value: totalValue });
+
+  // Keep only last 7 days
+  if (portfolioHistory.length > 100) portfolioHistory.shift();
+
+  renderPerformanceChart();
+}
+
+function renderPerformanceChart() {
+  const ctx = document.getElementById("performanceChart").getContext("2d");
+  const labels = portfolioHistory.map((p) => p.time.toLocaleTimeString());
+  const values = portfolioHistory.map((p) => p.value);
+
+  if (performanceChart) performanceChart.destroy();
+
+  performanceChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Portfolio Value (USD)",
+          data: values,
+          borderColor: "#FFD700",
+          borderWidth: 2,
+          fill: false,
+          tension: 0.3,
+        },
+      ],
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: getComputedStyle(document.body).color } },
+        y: { ticks: { color: getComputedStyle(document.body).color } },
+      },
+    },
+  });
+}
+
+// ===============================
+// 🌗 THEME TOGGLE
+// ===============================
+const themeToggle = document.getElementById("themeToggle");
+
+function setTheme(isLight) {
+  document.body.classList.toggle("light", isLight);
+  themeToggle.textContent = isLight ? "🌙 Dark Mode" : "🌞 Light Mode";
+  localStorage.setItem("theme", isLight ? "light" : "dark");
+}
+
+// Load saved preference
+const savedTheme = localStorage.getItem("theme");
+setTheme(savedTheme === "light");
+
+themeToggle.addEventListener("click", () => {
+  const isLight = !document.body.classList.contains("light");
+  setTheme(isLight);
 });
