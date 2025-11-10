@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChainPort – Token Tracker</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>ChainPort</h1>
+      <button id="connectWallet">Connect Wallet</button>
+    </header>
+
+    <main>
+      <section id="wallet-info">
+        <p id="walletAddress">Wallet not connected</p>
+      </section>
+
+      <section id="portfolio">
+        <h2>Your Portfolio</h2>
+        <table id="tokenTable">
+          <thead>
+            <tr>
+              <th>Token</th>
+              <th>Balance</th>
+              <th>Price (USD)</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <p id="totalValue"></p>
+      </section>
+    </main>
+    
+    <script type="module" src="https://esm.sh/viem@2"></script>
+    <script type="module" src="script.js"></script>
+  </body>
+</html>
