@@ -6,6 +6,10 @@ const walletAddressDisplay = document.getElementById("walletAddress");
 const tokenTableBody = document.querySelector("#tokenTable tbody");
 const totalValueDisplay = document.getElementById("totalValue");
 const ethPriceDisplay = document.getElementById("ethPriceDisplay");
+const ensNameDisplay = document.getElementById("ensName");
+const gasPriceDisplay = document.getElementById("gasPrice");
+const tokenSearchInput = document.getElementById("tokenSearch");
+
 
 const COVALENT_API_KEY = "cqt_rQWm9fdx3v3DJ6KF3fQ9wtym877K";
 
@@ -28,6 +32,21 @@ async function getEthPriceUSD() {
   } catch (e) {
     console.error("❌ Failed to fetch ETH price:", e);
     return null;
+  }
+}
+
+async function getENSName(address) {
+  try {
+    const response = await fetch(`https://api.ensideas.com/ens/resolve/${address}`);
+    const data = await response.json();
+    if (data.name) {
+      ensNameDisplay.textContent = `ENS: ${data.name}`;
+    } else {
+      ensNameDisplay.textContent = "ENS: —";
+    }
+  } catch (error) {
+    console.error("ENS lookup failed:", error);
+    ensNameDisplay.textContent = "ENS: —";
   }
 }
 
@@ -68,10 +87,27 @@ connectButton.addEventListener("click", async () => {
     connectButton.textContent = "Connected ✅";
 
     await loadPortfolio(walletAddress);
+    await getENSName(walletAddress);
   } catch (error) {
     console.error(error);
   }
 });
+
+async function getGasPrice() {
+  try {
+    const res = await fetch("https://api.etherscan.io/api?module=gastracker&action=gasoracle");
+    const data = await res.json();
+    const gas = data.result.ProposeGasPrice;
+    gasPriceDisplay.textContent = `Gas Price: ${gas} Gwei`;
+  } catch (e) {
+    gasPriceDisplay.textContent = "Gas Price: —";
+  }
+}
+
+// auto update every 15 seconds
+setInterval(getGasPrice, 15000);
+getGasPrice();
+
 
 // ===============================
 // 📊 LOAD PORTFOLIO
@@ -160,3 +196,12 @@ function renderPortfolioChart(tokens) {
     },
   });
 }
+
+tokenSearchInput.addEventListener("input", () => {
+  const searchTerm = tokenSearchInput.value.toLowerCase();
+  const rows = tokenTableBody.querySelectorAll("tr");
+  rows.forEach((row) => {
+    const token = row.querySelector("td:first-child").textContent.toLowerCase();
+    row.style.display = token.includes(searchTerm) ? "" : "none";
+  });
+});
