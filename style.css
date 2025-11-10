@@ -61,3 +61,12 @@ th {
   color: #00e0e0;
   font-weight: bold;
 }
+
+#tokenTable td {
+  color: #cfd8dc;
+}
+
+#tokenTable tr:hover {
+  background: rgba(0, 184, 184, 0.1);
+  transition: 0.3s;
+}
