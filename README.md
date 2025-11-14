@@ -21,6 +21,6 @@ HTML • CSS • JavaScript (ES6 Modules) • Chart.js
 
 ### 🚀 Run Locally
 ```bash
-git clone https://github.com/peteristic-eth/chainport.git
+git clone https://github.com/peteristic-eth/token-tracker.git
 cd chainport
 open index.html
