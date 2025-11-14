@@ -21,6 +21,6 @@ HTML • CSS • JavaScript (ES6 Modules) • Chart.js
 
 ### 🚀 Run Locally
 ```bash
-git clone https://github.com/yourusername/chainport.git
+git clone https://github.com/Dinejad/chainport.git
 cd chainport
 open index.html
